@@ -126,7 +126,11 @@ getUserArgs desc bi =
 makeGhcFlags :: Verbosity -> LocalBuildInfo -> ComponentLocalBuildInfo
              -> BuildInfo -> [String]
 makeGhcFlags verbosity lbi clbi bi =
+#if MIN_VERSION_Cabal(1,24,0)
+  renderGhcOptions (compiler lbi) (hostPlatform lbi) $
+#else
   renderGhcOptions (compiler lbi) $
+#endif
   sanitizeGhcOptions $
   componentGhcOptions verbosity lbi bi clbi $ buildDir lbi
 
@@ -143,7 +147,8 @@ sanitizeGhcOptions opts = GhcOptions
   , ghcOptOutputDynFile      = ghcOptOutputDynFile      opts
   , ghcOptSourcePathClear    = ghcOptSourcePathClear    opts
   , ghcOptSourcePath         = ghcOptSourcePath         opts
-#if MIN_VERSION_Cabal(1,22,0)
+#if MIN_VERSION_Cabal(1,24,0)
+#elif MIN_VERSION_Cabal(1,22,0)
   , ghcOptPackageKey         = ghcOptPackageKey         opts
 #else
   , ghcOptPackageName        = ghcOptPackageName        opts
@@ -152,7 +157,8 @@ sanitizeGhcOptions opts = GhcOptions
   , ghcOptPackages           = ghcOptPackages           opts
   , ghcOptHideAllPackages    = ghcOptHideAllPackages    opts
   , ghcOptNoAutoLinkPackages = ghcOptNoAutoLinkPackages opts
-#if MIN_VERSION_Cabal(1,22,0)
+#if MIN_VERSION_Cabal(1,24,0)
+#elif MIN_VERSION_Cabal(1,22,0)
   , ghcOptSigOf              = ghcOptSigOf              opts
 #endif
   , ghcOptLinkLibs           = ghcOptLinkLibs           opts
