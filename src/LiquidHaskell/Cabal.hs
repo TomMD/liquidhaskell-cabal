@@ -64,7 +64,20 @@ liquidHaskellMain = defaultMainWithHooks liquidHaskellHooks
 -- > main = defaultMainWithHooks $
 -- >   simpleUserHooks { postBuild = liquidHaskellPostBuildHook }
 liquidHaskellHooks :: UserHooks
-liquidHaskellHooks = simpleUserHooks { postBuild = liquidHaskellPostBuildHook }
+liquidHaskellHooks = simpleUserHooks { postBuild = liquidHaskellPostBuildHook
+                                     , preConf = liquidHaskellPreConf
+                                     }
+
+liquidHaskellPreConf :: Args -> ConfigFlags -> IO HookedBuildInfo
+liquidHaskellPreConf a c =
+  do res <- preConf simpleUserHooks a c
+     case res of
+       (Just bi,whatIsThisField) ->
+         return ( Just bi { buildTools = liquidDep : buildTools bi }
+                , whatIsThisField)
+       ow@(Nothing,_) -> return ow -- We tried
+  where
+  liquidDep = Dependency (PackageName "liquid") AnyVersion
 
 -- | The raw build hook, checking the @liquidhaskell@ flag and executing the
 -- LiquidHaskell binary with appropriate arguments when enabled. Can be hooked
